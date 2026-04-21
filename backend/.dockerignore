@@ -1,0 +1,12 @@
+target
+.mvn
+mvnw
+mvnw.cmd
+.git
+.gitignore
+Dockerfile
+README.md
+pom.xml.releaseBackup
+release.properties
+# Exclude the actual uploads
+uploads

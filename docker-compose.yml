@@ -1,0 +1,58 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: toeic-vocab-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: toeic_db
+    # Xoá ports 3306 để tránh xung đột với máy thật, chạy nội bộ trong Docker Network
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - toeic_network
+
+  # Backend Spring Boot
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: toeic-vocab-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=toeic_db
+      - DB_USER=root
+      - DB_PASSWORD=root
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - db
+    networks:
+      - toeic_network
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+    container_name: toeic-vocab-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - toeic_network
+
+networks:
+  toeic_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
