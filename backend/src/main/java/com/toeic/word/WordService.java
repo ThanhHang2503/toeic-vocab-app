@@ -1,28 +1,26 @@
 package com.toeic.word;
 
+import com.toeic.common.storage.StorageService;
+import com.toeic.common.utils.StringUtils;
 import com.toeic.topic.Topic;
 import com.toeic.topic.TopicRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class WordService {
 
     private final WordRepository wordRepository;
     private final TopicRepository topicRepository;
+    private final StorageService storageService;
 
-    @Value("${app.upload.dir}")
-    private String uploadDir;
-
-    public WordService(WordRepository wordRepository, TopicRepository topicRepository) {
+    public WordService(WordRepository wordRepository, TopicRepository topicRepository, StorageService storageService) {
         this.wordRepository = wordRepository;
         this.topicRepository = topicRepository;
+        this.storageService = storageService;
     }
 
     public List<Word> getAllWords() {
@@ -43,7 +41,11 @@ public class WordService {
 
         String imagePath = null;
         if (file != null && !file.isEmpty()) {
-            imagePath = saveFile(file);
+            // 1. Chuẩn hóa tên danh mục (slugify)
+            String slugifiedCategory = StringUtils.slugify(topic.getName());
+            
+            // 2. Lưu file thông qua StorageService (tự động xử lý STT và thư mục con)
+            imagePath = storageService.store(file, slugifiedCategory);
         }
 
         Word word = Word.builder()
@@ -60,17 +62,5 @@ public class WordService {
 
     public void deleteWord(Long id) {
         wordRepository.deleteById(id);
-    }
-
-    private String saveFile(MultipartFile file) throws IOException {
-        Path root = Paths.get(uploadDir);
-        if (!Files.exists(root)) {
-            Files.createDirectories(root);
-        }
-
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Files.copy(file.getInputStream(), root.resolve(fileName));
-        
-        return fileName;
     }
 }
