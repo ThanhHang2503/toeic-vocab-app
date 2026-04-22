@@ -15,6 +15,11 @@ public class TopicController {
         this.topicService = topicService;
     }
 
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
+
     @GetMapping
     public List<Topic> getAllTopics() {
         return topicService.getAllTopics();
@@ -28,6 +33,11 @@ public class TopicController {
     @PostMapping
     public ResponseEntity<Topic> createTopic(@RequestBody Topic topic) {
         return ResponseEntity.ok(topicService.createTopic(topic));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Topic> updateTopic(@PathVariable Long id, @RequestBody Topic topic) {
+        return ResponseEntity.ok(topicService.updateTopic(id, topic));
     }
 
     @DeleteMapping("/{id}")

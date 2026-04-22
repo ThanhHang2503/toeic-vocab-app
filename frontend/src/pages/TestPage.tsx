@@ -39,17 +39,28 @@ const TestPage = () => {
     fetchTopics();
   }, [fetchTopics]);
 
+  const generateFillBlankQuestion = (word: string, example: string) => {
+    const wordLower = word.toLowerCase();
+    const exampleLower = example.toLowerCase();
+    const firstIndex = exampleLower.indexOf(wordLower);
+    
+    if (firstIndex !== -1) {
+      const before = example.substring(0, firstIndex);
+      const after = example.substring(firstIndex + word.length);
+      return `${before}______${after}`;
+    }
+    return example;
+  };
+
   const generateQuestions = (vocabList: any[]) => {
     return vocabList.map((item, index) => {
       const type = index % 2 === 0 ? QuestionType.FILL_BLANK : QuestionType.TRANSLATION;
       
       let prompt = '';
-      let answer = item.word.toLowerCase();
+      let answer = item.word; // Answer is the exact word from database
 
       if (type === QuestionType.FILL_BLANK) {
-        // Hide first occurrence of the word in example
-        const regex = new RegExp(`\\b${item.word}\\b`, 'i');
-        prompt = item.example.replace(regex, '______');
+        prompt = generateFillBlankQuestion(item.word, item.example);
       } else {
         prompt = item.meaning;
       }
@@ -91,6 +102,8 @@ const TestPage = () => {
   };
 
   const handleSubmit = async () => {
+    if (!userAnswer.trim()) return;
+    
     const current = questions[currentIndex];
     const isCorrect = userAnswer.toLowerCase().trim() === current.answer.toLowerCase().trim();
 
@@ -101,11 +114,18 @@ const TestPage = () => {
       toast.success('Chính xác!', { duration: 1000 });
     } else {
       toast.error('Sai rồi!', { duration: 1000 });
+      
+      // Check for duplicate mistakes in this session
+      const isDuplicate = mistakes.some(m => m.wordId === current.wordId);
+      
       const mistake = {
         wordId: current.wordId,
         wrongAnswer: userAnswer
       };
-      setMistakes(prev => [...prev, mistake]);
+      
+      if (!isDuplicate) {
+        setMistakes(prev => [...prev, mistake]);
+      }
       
       // Save mistake to backend
       try {
@@ -256,19 +276,33 @@ const TestPage = () => {
            ) : (
              <div className={cn(
                "p-6 rounded-2xl animate-in zoom-in duration-300",
-               userAnswer.toLowerCase().trim() === current.answer.toLowerCase() 
+               userAnswer.toLowerCase().trim() === current.answer.toLowerCase().trim() 
                  ? "bg-success/10 border-2 border-success/20" 
                  : "bg-danger/10 border-2 border-danger/20"
              )}>
                <div className="flex items-start justify-between mb-2">
-                 <p className="text-sm font-bold uppercase tracking-wider opacity-70">
-                   {userAnswer.toLowerCase().trim() === current.answer.toLowerCase() ? 'Chính xác!' : 'Đáp án đúng là:'}
-                 </p>
-                 {userAnswer.toLowerCase().trim() !== current.answer.toLowerCase() && (
-                   <span className="text-xs font-medium">Bạn đã nhập: {userAnswer || '(Trống)'}</span>
+                 <div className="flex flex-col">
+                   <p className={cn(
+                     "text-lg font-bold uppercase tracking-wider",
+                     userAnswer.toLowerCase().trim() === current.answer.toLowerCase().trim() ? "text-success" : "text-danger"
+                   )}>
+                     {userAnswer.toLowerCase().trim() === current.answer.toLowerCase().trim() ? '✅ Đúng!' : '❌ Sai!'}
+                   </p>
+                   <p className="text-sm opacity-70 mt-1">
+                     {userAnswer.toLowerCase().trim() === current.answer.toLowerCase().trim() ? 'Bạn đã trả lời đúng' : 'Hãy cố gắng ở câu tiếp theo'}
+                   </p>
+                 </div>
+                 {userAnswer.toLowerCase().trim() !== current.answer.toLowerCase().trim() && (
+                   <div className="text-right">
+                     <span className="text-xs font-medium block opacity-50">Bạn đã nhập:</span>
+                     <span className="text-sm font-bold text-danger line-through">{userAnswer || '(Trống)'}</span>
+                   </div>
                  )}
                </div>
-               <p className="text-3xl font-black">{current.word}</p>
+               <div className="mt-4 p-4 bg-white/50 rounded-xl">
+                 <p className="text-xs font-bold text-gray-400 uppercase mb-1">Đáp án đúng là:</p>
+                 <p className="text-3xl font-black text-primary">{current.answer}</p>
+               </div>
                <Button className="w-full mt-6 h-12 text-lg font-bold" onClick={nextQuestion}>
                  Câu tiếp theo &rarr;
                </Button>

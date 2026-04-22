@@ -1,7 +1,9 @@
 package com.toeic.topic;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Formula;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Topic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +26,9 @@ public class Topic {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Formula("(SELECT COUNT(v.id) FROM vocabulary v WHERE v.topic_id = id)")
+    private Integer vocabCount;
 
     @PrePersist
     protected void onCreate() {

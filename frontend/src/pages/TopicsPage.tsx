@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTopicStore } from '@/features/topics/stores/topicStore';
+import { useVocabStore } from '@/features/vocabulary/stores/vocabStore';
 import { Button } from '@/shared/components/Button';
 import { Plus, Trash2, BookOpen } from 'lucide-react';
 import { Modal } from '@/shared/components/Modal';
@@ -9,12 +11,18 @@ import type { CreateTopicDto } from '@/features/topics/types/topic.types';
 
 const TopicsPage = () => {
   const { topics, isLoading, fetchTopics, addTopic, deleteTopic } = useTopicStore();
+  const { words, fetchWords } = useVocabStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateTopicDto>();
 
   useEffect(() => {
     fetchTopics();
-  }, [fetchTopics]);
+    fetchWords();
+  }, [fetchTopics, fetchWords]);
+
+  const getVocabCount = (topicId: any): number => {
+    return words.filter(v => v.topicId === topicId).length;
+  };
 
   const onAddSubmit = async (data: CreateTopicDto) => {
     await addTopic(data);
@@ -22,7 +30,8 @@ const TopicsPage = () => {
     reset();
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
     if (window.confirm('Bạn có chắc chắn muốn xóa chủ đề này không?')) {
       deleteTopic(id);
     }
@@ -50,43 +59,68 @@ const TopicsPage = () => {
       ) : topics.length === 0 ? (
         <div className="card h-64 flex flex-col items-center justify-center text-center">
           <BookOpen size={48} className="text-gray-300 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900">Chưa có chủ đề nào</h3>
-          <p className="text-gray-500 mt-1 max-w-sm">Hãy tạo chủ đề đầu tiên để bắt đầu thêm từ vựng và luyện tập.</p>
+          <h3 className="text-xl font-bold text-gray-900">Bạn chưa có chủ đề nào</h3>
+          <p className="text-gray-500 mt-1 max-w-sm">Hãy tạo chủ đề đầu tiên để bắt đầu thêm từ vựng và luyện tập!</p>
           <Button variant="outline" className="mt-6" onClick={() => setIsAddModalOpen(true)}>
             Tạo chủ đề đầu tiên
           </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {topics.map((topic) => (
-            <div key={topic.id} className="card group hover:border-primary transition-all relative overflow-hidden">
-              <div className="flex flex-col h-full">
-                <div className="flex items-start justify-between">
-                  <div className="bg-primary/10 p-3 rounded-xl text-primary mb-4">
-                    <BookOpen size={24} />
+          {topics.map((topic) => {
+            const vocabCount = getVocabCount(topic.id);
+            return (
+              <div key={topic.id} className="relative">
+                <Link 
+                  to={`/topics/${topic.id}`}
+                  className="group flex flex-col h-full bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-primary/50 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden"
+                >
+                  {/* Decorative background element */}
+                  <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                  
+                  <div className="flex flex-col h-full relative z-10">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="bg-primary/10 p-3 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                        <BookOpen size={24} />
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
+                      {topic.name}
+                    </h3>
+                    
+                    <p className="text-gray-500 text-sm mt-2 line-clamp-2 flex-grow leading-relaxed">
+                      {topic.description || 'Chưa có mô tả cho chủ đề này'}
+                    </p>
+                    
+                    <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="font-bold text-gray-700 text-sm">{vocabCount} từ vựng</span>
+                      </div>
+                      <span className="text-primary font-bold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Chi tiết &rarr;
+                      </span>
+                    </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => topic.id && handleDelete(topic.id)}
-                    className="text-gray-400 hover:text-danger hover:bg-danger/10"
-                  >
-                    <Trash2 size={18} />
-                  </Button>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
-                  {topic.name}
-                </h3>
-                <p className="text-gray-500 text-sm mt-2 line-clamp-2 flex-grow">
-                  {topic.description || 'Không có mô tả'}
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between text-sm">
-                  <span className="font-semibold text-gray-900">{topic.vocabCount || 0} từ vựng</span>
-                  <span className="text-primary font-medium">Chi tiết &rarr;</span>
-                </div>
+                </Link>
+                
+                {/* Delete button positioned absolutely outside the Link's hit area if possible, or handled with stopPropagation */}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    topic.id && handleDelete(e, topic.id);
+                  }}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-danger hover:bg-danger/10 p-2 z-20"
+                >
+                  <Trash2 size={18} />
+                </Button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

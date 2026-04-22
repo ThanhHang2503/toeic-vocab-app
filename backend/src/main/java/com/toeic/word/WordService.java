@@ -60,6 +60,28 @@ public class WordService {
         return wordRepository.save(word);
     }
 
+    public Word updateWord(Long id, String wordText, String meaning, String example, String pronunciation, Long topicId, MultipartFile file) throws IOException {
+        Word word = wordRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Word not found"));
+        
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new RuntimeException("Topic not found"));
+
+        if (file != null && !file.isEmpty()) {
+            String slugifiedCategory = StringUtils.slugify(topic.getName());
+            String imagePath = storageService.store(file, slugifiedCategory);
+            word.setImagePath(imagePath);
+        }
+
+        word.setWord(wordText);
+        word.setMeaning(meaning);
+        word.setExample(example);
+        word.setPronunciation(pronunciation);
+        word.setTopic(topic);
+
+        return wordRepository.save(word);
+    }
+
     public void deleteWord(Long id) {
         wordRepository.deleteById(id);
     }

@@ -1,5 +1,6 @@
 package com.toeic.word;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.toeic.topic.Topic;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Word {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { AlertCircle, Trash2, RefreshCw, CreditCard, Trophy } from 'lucide-react';
 import axiosInstance from '@/shared/lib/axios';
@@ -89,7 +90,11 @@ const MistakesPage = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-black text-gray-900 uppercase">{mistake.word.word}</h3>
+                    <Link to={`/vocabulary/${mistake.word.id}`}>
+                      <h3 className="text-lg font-black text-gray-900 uppercase hover:text-primary transition-colors cursor-pointer">
+                        {mistake.word.word}
+                      </h3>
+                    </Link>
                     <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-500 font-bold uppercase">
                       {mistake.word.topic.name}
                     </span>

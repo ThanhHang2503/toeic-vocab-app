@@ -1,5 +1,6 @@
 package com.toeic.mistake;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.toeic.word.Word;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Mistake {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

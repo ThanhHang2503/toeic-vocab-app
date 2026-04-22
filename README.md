@@ -3,83 +3,101 @@
 Ứng dụng học từ vựng TOEIC hiện đại, được xây dựng với kiến trúc Fullstack mạnh mẽ, giao diện cao cấp và trải nghiệm người dùng tối ưu.
 
 ## 📁 Cấu trúc dự án
-Dự án được quản lý tập trung và vận hành mượt mà thông qua Docker:
-- **`frontend/`**: Ứng dụng React 19 + Vite 8 + Tailwind CSS 4.
-- **`backend/`**: Ứng dụng Spring Boot 3.3 (Java 21) + Hibernate/JPA.
+- **`frontend/`**: React 19 + Vite 8 + Tailwind CSS 4.
+- **`backend/`**: Spring Boot 3.3 (Java 21) + Hibernate/JPA.
 - **`database/`**: MySQL 8.0 Script.
-- **`docker-compose.yml`**: Trái tim điều phối toàn bộ hệ thống.
-
-## 🏛 Công nghệ lõi (Premium Stack)
-- **Frontend**: 
-  - **Framework**: React 19 (Latest)
-  - **Build Tool**: Vite 8 ⚡
-  - **Styling**: Tailwind CSS 4 (Engine mới nhất)
-  - **Icons**: Lucide React
-  - **State Management**: Zustand
-- **Backend**:
-  - **Core**: Spring Boot 3.3.x
-  - **Java Version**: 21 (LTS)
-  - **Database**: MySQL 8.0
-- **Infrastructure**: Docker & Docker Compose
-
-## 🐳 Hướng dẫn khởi chạy nhanh (Docker)
-
-Chỉ cần một lệnh duy nhất để thiết lập toàn bộ môi trường:
-
-1. **Chuẩn bị file môi trường**:
-   ```bash
-   cd frontend
-   cp .env.example .env
-   cd ..
-   ```
-
-2. **Khởi động hệ thống**:
-   ```bash
-   # Build và start toàn bộ container
-   docker-compose up -d --build
-   ```
-
-3. **Truy cập**:
-   - **Giao diện người dùng**: [http://localhost:5173](http://localhost:5173)
-   - **Tài liệu API (Dev)**: [http://localhost:8080/api](http://localhost:8080/api)
-
-## 🛠 Tính năng nổi bật
-- **Dashboard thông minh**: Tổng quan tiến độ học tập.
-- **Flashcard 3D**: Chế độ thẻ lật mượt mà với hiệu ứng xoay 3D cao cấp.
-- **Knowledge Test**: 
-  - Hệ thống tự động tạo câu hỏi Fill-in-the-blank từ ví dụ.
-  - Chế độ dịch nghĩa Anh-Việt.
-- **Persistence Mistakes**: Tự động lưu lại những từ bạn làm sai để ôn tập lại sau.
-- **No-Auth Public App**: Được thiết kế để truy cập công cộng, không yêu cầu đăng nhập phức tạp.
-
-## ⚠️ Giải quyết sự cố thường gặp (Troubleshooting)
-
-Nếu bạn gặp phải lỗi `500 Internal Server Error` hoặc lỗi `ERR_MODULE_NOT_FOUND` khi chạy bằng Docker:
-
-1. **Lỗi Vite Cache**: Do sự khác biệt giữa môi trường Windows và Docker volume.
-   ```powershell
-   # Giải pháp: Xóa cache Vite và rebuild lại sạch
-   docker compose down
-   rm -Recurse -Force frontend/node_modules/.vite
-   docker compose build --no-cache frontend
-   docker compose up -d
-   ```
-
-2. **Lỗi Tailwind Unknown Utility (`btn`)**: 
-   - Đảm bảo không sử dụng `@apply btn` nếu không có DaisyUI.
-   - Luôn sử dụng các utility chuẩn của Tailwind 4 trong `index.css`.
-
-3. **Reset Database**:
-   - Để làm sạch hoàn toàn dữ liệu và chạy lại từ đầu:
-   ```bash
-   docker compose down -v
-   docker compose up -d
-   ```
-
-## 📜 Quy ước phát triển
-- **Giao diện**: Luôn ưu tiên tính thẩm mỹ (Premium UI/UX). Sử dụng HSL colors và Glassmorphism.
-- **Backend**: Sử dụng kiến trúc 3 lớp (Controller -> Service -> Repository).
-- **Database**: Mọi thay đổi schema phải được cập nhật vào `database/schema.sql`.
+- **`docker-compose.yml`**: Trình điều phối toàn bộ hệ thống.
 
 ---
-*Phát triển bởi đội ngũ đam mê công nghệ học thuật.* 💡
+
+## 🛠 Yêu cầu hệ thống (Prerequisites)
+Trước khi bắt đầu, hãy đảm bảo bạn đã cài đặt:
+- **Docker & Docker Compose** (Khuyên dùng)
+- Hoặc nếu chạy thủ công:
+  - **Node.js 20+** & **npm**
+  - **Java 21 (JDK)**
+  - **Maven 3.9+**
+  - **MySQL 8.0**
+
+---
+
+## 🐳 Khởi chạy bằng Docker (Khuyên dùng)
+
+Đây là cách nhanh nhất và ổn định nhất để chạy dự án.
+
+### 1. Chuẩn bị file môi trường
+Sao chép file cấu hình mẫu cho Frontend:
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+### 2. Khởi động hệ thống
+Dùng lệnh duy nhất để build và chạy tất cả các dịch vụ:
+```bash
+docker-compose up -d --build
+```
+
+### 3. Truy cập ứng dụng
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:8080](http://localhost:8080)
+- **API Documentation**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) (nếu có)
+
+---
+
+## 💻 Khởi chạy cục bộ (Manual Setup)
+
+Nếu bạn muốn phát triển hoặc không sử dụng Docker:
+
+### 1. Cấu hình Database
+- Tạo database tên `toeic_db` trong MySQL.
+- Chạy script tại `database/schema.sql` để tạo bảng.
+
+### 2. Chạy Backend
+```bash
+cd backend
+# Cấu hình DB trong src/main/resources/application.yml nếu cần
+./mvnw spring-boot:run
+```
+
+### 3. Chạy Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*Lưu ý: Đảm bảo `.env` trỏ đúng về API URL (mặc định http://localhost:8080/api).*
+
+---
+
+## ⚠️ Giải quyết sự cố (Troubleshooting)
+
+### Lỗi Vite/Node_modules (khi chạy Docker trên Windows)
+Nếu gặp lỗi `ERR_MODULE_NOT_FOUND` hoặc hot-reload không hoạt động:
+```powershell
+# Windows PowerShell
+docker compose down
+rm -Recurse -Force frontend/node_modules
+docker compose build --no-cache
+docker compose up -d
+```
+
+### Reset toàn bộ dữ liệu
+Để xóa sạch database và khởi động lại:
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+### Lỗi kết nối Database
+- Đảm bảo không có service MySQL nào khác đang chạy trên cổng 3306 ở máy thật nếu bạn dùng cổng này.
+- Kiểm tra logs: `docker compose logs -f db`
+
+---
+
+## 📜 Quy ước phát triển
+- **Giao diện**: Ưu tiên tính thẩm mỹ (HSL colors, Glassmorphism).
+- **Backend**: Kiến trúc 3 lớp (Controller -> Service -> Repository).
+- **Database**: Cập nhật `database/schema.sql` khi có thay đổi cấu trúc.
+
+---
+*Phát triển với ❤️ bởi đội ngũ TOEIC Mastery.* 💡

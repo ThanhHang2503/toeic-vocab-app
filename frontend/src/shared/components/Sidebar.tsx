@@ -16,6 +16,11 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+const mockUser = {
+  username: 'TOEIC Learner',
+  email: 'learner@example.com'
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -64,15 +69,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         ))}
       </nav>
 
-      {/* Footer / User Profile Placeholder */}
+      {/* Footer / User Profile */}
       <div className="p-4 border-t border-gray-100">
         <div className="flex items-center gap-3 p-2">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-            JD
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-extrabold shadow-inner">
+            {mockUser.username.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">Demo User</p>
-            <p className="text-xs text-gray-500 truncate">1@gmail.com</p>
+            <p className="text-sm font-bold text-gray-900 truncate">{mockUser.username}</p>
+            <p className="text-xs text-gray-500 truncate">{mockUser.email}</p>
           </div>
         </div>
       </div>

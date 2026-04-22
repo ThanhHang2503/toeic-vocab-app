@@ -9,6 +9,7 @@ services:
     # Xoá ports 3306 để tránh xung đột với máy thật, chạy nội bộ trong Docker Network
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
       - toeic_network
 

@@ -47,6 +47,23 @@ public class WordController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Word> updateWord(
+            @PathVariable Long id,
+            @RequestParam("word") String word,
+            @RequestParam("meaning") String meaning,
+            @RequestParam("example") String example,
+            @RequestParam(value = "pronunciation", required = false) String pronunciation,
+            @RequestParam("topicId") Long topicId,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        try {
+            Word updated = wordService.updateWord(id, word, meaning, example, pronunciation, topicId, image);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWord(@PathVariable Long id) {
         wordService.deleteWord(id);

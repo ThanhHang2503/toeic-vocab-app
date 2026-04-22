@@ -1,37 +1,69 @@
 import { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useVocabStore } from '@/features/vocabulary/stores/vocabStore';
 import { useTopicStore } from '@/features/topics/stores/topicStore';
 import { Button } from '@/shared/components/Button';
-import { Plus, Trash2, Search, Filter, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Search, Filter, Image as ImageIcon, ArrowLeft, Edit2, Eye } from 'lucide-react';
 import { Modal } from '@/shared/components/Modal';
 import { Input } from '@/shared/components/Input';
 import { useForm } from 'react-hook-form';
+import type { Vocabulary } from '@/features/vocabulary/types/vocabulary.types';
 
 const VocabularyPage = () => {
-  const { words, isLoading, fetchWords, addWord, deleteWord } = useVocabStore();
+  const { topicId } = useParams<{ topicId: string }>();
+  const navigate = useNavigate();
+  const { words, isLoading, fetchWords, addWord, updateWord, deleteWord } = useVocabStore();
   const { topics, fetchTopics } = useTopicStore();
   const [selectedTopic, setSelectedTopic] = useState<number | undefined>(undefined);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingWord, setEditingWord] = useState<Vocabulary | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
   useEffect(() => {
     fetchTopics();
-    fetchWords(selectedTopic);
-  }, [fetchTopics, fetchWords, selectedTopic]);
+  }, [fetchTopics]);
 
-  const onAddSubmit = async (data: any) => {
+  useEffect(() => {
+    const tId = topicId ? Number(topicId) : undefined;
+    setSelectedTopic(tId);
+    fetchWords(tId);
+  }, [fetchWords, topicId]);
+
+  const onSubmit = async (data: any) => {
     const formData = new FormData();
     formData.append('word', data.word);
     formData.append('meaning', data.meaning);
     formData.append('example', data.example);
     formData.append('topicId', data.topicId);
     if (data.pronunciation) formData.append('pronunciation', data.pronunciation);
-    if (data.image[0]) formData.append('image', data.image[0]);
+    if (data.image && data.image[0]) formData.append('image', data.image[0]);
 
-    await addWord(formData);
-    setIsAddModalOpen(false);
+    if (editingWord) {
+      await updateWord(editingWord.id, formData);
+    } else {
+      await addWord(formData);
+    }
+    
+    setIsModalOpen(false);
+    setEditingWord(null);
+    reset();
+  };
+
+  const handleEdit = (word: Vocabulary) => {
+    setEditingWord(word);
+    setIsModalOpen(true);
+    setValue('word', word.word);
+    setValue('meaning', word.meaning);
+    setValue('example', word.example);
+    setValue('pronunciation', word.pronunciation);
+    setValue('topicId', word.topic?.id);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingWord(null);
     reset();
   };
 
@@ -43,11 +75,26 @@ const VocabularyPage = () => {
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý Từ vựng</h1>
-          <p className="text-gray-500 mt-1">Trau dồi vốn từ của bạn mỗi ngày</p>
+        <div className="flex items-center gap-4">
+          {topicId && (
+            <Button variant="ghost" size="sm" onClick={() => navigate('/topics')} className="text-gray-400 hover:text-primary">
+              <ArrowLeft size={20} />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {topicId && topics.find(t => t.id === Number(topicId))?.name 
+                ? `Chủ đề: ${topics.find(t => t.id === Number(topicId))?.name}`
+                : 'Quản lý Từ vựng'}
+            </h1>
+            <p className="text-gray-500 mt-1">
+              {topicId 
+                ? topics.find(t => t.id === Number(topicId))?.description || 'Danh sách từ vựng thuộc chủ đề này'
+                : 'Trau dồi vốn từ của bạn mỗi ngày'}
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)} className="gap-2 shadow-lg shadow-primary/20">
+        <Button onClick={() => setIsModalOpen(true)} className="gap-2 shadow-lg shadow-primary/20">
           <Plus size={18} />
           Thêm từ mới
         </Button>
@@ -99,8 +146,8 @@ const VocabularyPage = () => {
                 ))
               ) : filteredWords.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
-                    Không tìm thấy từ vựng nào
+                  <td colSpan={5} className="px-6 py-10 text-center text-gray-500 italic">
+                    Chưa có từ vựng nào. Hãy thêm từ mới!
                   </td>
                 </tr>
               ) : (
@@ -119,7 +166,12 @@ const VocabularyPage = () => {
                             <ImageIcon size={18} />
                           </div>
                         )}
-                        <span className="font-bold text-gray-900">{word.word}</span>
+                        <Link 
+                          to={`/vocabulary/${word.id}`}
+                          className="font-bold text-gray-900 hover:text-primary transition-colors"
+                        >
+                          {word.word}
+                        </Link>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 font-mono">{word.pronunciation || '-'}</td>
@@ -130,14 +182,34 @@ const VocabularyPage = () => {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{word.example}</td>
                     <td className="px-6 py-4 text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => word.id && deleteWord(word.id)}
-                        className="text-gray-400 hover:text-danger hover:bg-danger/10"
-                      >
-                        <Trash2 size={18} />
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Link to={`/vocabulary/${word.id}`}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-gray-400 hover:text-primary hover:bg-primary/10"
+                            title="Xem chi tiết"
+                          >
+                            <Eye size={18} />
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleEdit(word)}
+                          className="text-gray-400 hover:text-primary hover:bg-primary/10"
+                        >
+                          <Edit2 size={18} />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => word.id && deleteWord(word.id)}
+                          className="text-gray-400 hover:text-danger hover:bg-danger/10"
+                        >
+                          <Trash2 size={18} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -147,14 +219,14 @@ const VocabularyPage = () => {
         </div>
       </div>
 
-      {/* Add Word Modal */}
+      {/* Vocabulary Modal */}
       <Modal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)}
-        title="Thêm từ vựng mới"
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal}
+        title={editingWord ? "Cập nhật từ vựng" : "Thêm từ vựng mới"}
         size="lg"
       >
-        <form onSubmit={handleSubmit(onAddSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input 
               label="Từ tiếng Anh"
@@ -192,7 +264,12 @@ const VocabularyPage = () => {
           <Input 
             label="Câu ví dụ"
             placeholder="Viết một câu ví dụ chứa từ vựng trên"
-            {...register('example', { required: 'Bắt buộc' })}
+            {...register('example', { 
+              required: 'Bắt buộc',
+              validate: (value, formValues) => 
+                value.toLowerCase().includes(formValues.word.toLowerCase()) || 
+                'Câu ví dụ phải chứa từ vựng tương ứng'
+            })}
             error={errors.example?.message as string}
           />
 
@@ -210,11 +287,11 @@ const VocabularyPage = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={handleCloseModal}>
               Hủy
             </Button>
             <Button type="submit" isLoading={isLoading}>
-              Lưu từ vựng
+              {editingWord ? 'Cập nhật' : 'Lưu từ vựng'}
             </Button>
           </div>
         </form>

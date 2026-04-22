@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useVocabStore } from '@/features/vocabulary/stores/vocabStore';
 import { useTopicStore } from '@/features/topics/stores/topicStore';
 import { Button } from '@/shared/components/Button';
@@ -6,6 +7,7 @@ import { BookOpen, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
 const FlashcardPage = () => {
+  const navigate = useNavigate();
   const { words, fetchWords, isLoading } = useVocabStore();
   const { topics, fetchTopics } = useTopicStore();
   const [, setSelectedTopic] = useState<number | null>(null);
@@ -121,14 +123,25 @@ const FlashcardPage = () => {
                     <p className="text-sm font-bold text-primary uppercase tracking-wider mb-2">Ý nghĩa</p>
                     <h2 className="text-4xl font-bold text-gray-900">{currentWord.meaning}</h2>
                   </div>
-                  <div className="max-w-md">
-                    <p className="text-sm font-bold text-primary uppercase tracking-wider mb-2">Ví dụ</p>
-                    <p className="text-xl text-gray-700 italic leading-relaxed">
-                      "{currentWord.example}"
-                    </p>
+                    <div className="max-w-md">
+                      <p className="text-sm font-bold text-primary uppercase tracking-wider mb-2">Ví dụ</p>
+                      <p className="text-xl text-gray-700 italic leading-relaxed">
+                        "{currentWord.example}"
+                      </p>
+                    </div>
                   </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="mt-8 gap-2 border-primary/20 hover:bg-primary hover:text-white transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/vocabulary/${currentWord.id}`);
+                    }}
+                  >
+                    Xem chi tiết
+                  </Button>
                 </div>
-              </div>
             </div>
           </div>
 
