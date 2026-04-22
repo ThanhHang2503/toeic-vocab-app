@@ -14,6 +14,14 @@ const QuestionType = {
 
 type QuestionType = typeof QuestionType[keyof typeof QuestionType];
 
+const TestMode = {
+  MIXED: 'MIXED',
+  FILL_BLANK: 'FILL_BLANK',
+  TRANSLATION: 'TRANSLATION'
+} as const;
+
+type TestMode = typeof TestMode[keyof typeof TestMode];
+
 interface Question {
   wordId: number;
   word: string;
@@ -34,6 +42,7 @@ const TestPage = () => {
   const [score, setScore] = useState(0);
   const [mistakes, setMistakes] = useState<any[]>([]);
   const [isFinished, setIsFinished] = useState(false);
+  const [testMode, setTestMode] = useState<TestMode>(TestMode.MIXED);
 
   useEffect(() => {
     fetchTopics();
@@ -54,7 +63,12 @@ const TestPage = () => {
 
   const generateQuestions = (vocabList: any[]) => {
     return vocabList.map((item, index) => {
-      const type = index % 2 === 0 ? QuestionType.FILL_BLANK : QuestionType.TRANSLATION;
+      let type: QuestionType;
+      if (testMode === TestMode.MIXED) {
+        type = index % 2 === 0 ? QuestionType.FILL_BLANK : QuestionType.TRANSLATION;
+      } else {
+        type = testMode === TestMode.FILL_BLANK ? QuestionType.FILL_BLANK : QuestionType.TRANSLATION;
+      }
       
       let prompt = '';
       let answer = item.word; // Answer is the exact word from database
@@ -154,7 +168,31 @@ const TestPage = () => {
         </div>
         <div>
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Kiểm tra kiến thức</h1>
-          <p className="text-gray-500 mt-2 text-lg">Chọn một chủ đề để bắt đầu bài kiểm tra 15 phút</p>
+          <p className="text-gray-500 mt-2 text-lg">Chọn chế độ và chủ đề để bắt đầu bài kiểm tra 15 phút</p>
+        </div>
+
+        <div className="flex flex-col items-center gap-4 py-6">
+          <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">CHẾ ĐỘ KIỂM TRA</p>
+          <div className="flex justify-center gap-3 bg-gray-100/50 p-2 rounded-2xl">
+             <button 
+               onClick={() => setTestMode(TestMode.MIXED)} 
+               className={cn("px-6 py-3 rounded-xl font-bold transition-all", testMode === TestMode.MIXED ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-gray-600 hover:bg-gray-200")}
+             >
+               Trộn lẫn
+             </button>
+             <button 
+               onClick={() => setTestMode(TestMode.FILL_BLANK)} 
+               className={cn("px-6 py-3 rounded-xl font-bold transition-all", testMode === TestMode.FILL_BLANK ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-gray-600 hover:bg-gray-200")}
+             >
+               Chỉ điền từ
+             </button>
+             <button 
+               onClick={() => setTestMode(TestMode.TRANSLATION)} 
+               className={cn("px-6 py-3 rounded-xl font-bold transition-all", testMode === TestMode.TRANSLATION ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-gray-600 hover:bg-gray-200")}
+             >
+               Chỉ dịch nghĩa
+             </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
