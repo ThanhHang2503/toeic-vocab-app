@@ -35,4 +35,7 @@ public class Word {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "topic_id", nullable = false, columnDefinition = "BIGINT")
     private Topic topic;
+
+    @Column(name = "status", length = 20)
+    private String status;
 }

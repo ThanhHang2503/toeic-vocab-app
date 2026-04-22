@@ -12,6 +12,7 @@ interface VocabState {
   addWord: (formData: FormData) => Promise<void>;
   updateWord: (id: number, formData: FormData) => Promise<void>;
   deleteWord: (id: number) => Promise<void>;
+  updateWordStatus: (id: number, status: 'known' | 'unknown') => Promise<void>;
 }
 
 export const useVocabStore = create<VocabState>((set, get) => ({
@@ -83,6 +84,34 @@ export const useVocabStore = create<VocabState>((set, get) => ({
       toast.success('Xóa từ vựng thành công');
     } catch (err: any) {
       toast.error('Lỗi khi xóa từ vựng');
+    }
+  },
+
+  updateWordStatus: async (id, status) => {
+    // Optimistic UI update
+    const previousWords = get().words;
+    set({
+      words: previousWords.map((w) => (w.id === id ? { ...w, status } : w)),
+    });
+
+    try {
+      const response = await axiosInstance.patch(`/words/${id}/status`, null, {
+        params: { status }
+      });
+      // Ensure the response data has the updated status
+      set({
+        words: get().words.map((w) => (w.id === id ? response.data : w)),
+      });
+      
+      if (status === 'known') {
+        toast.success('Đã thêm vào danh sách đã nhớ');
+      } else {
+        toast.success('Đã thêm vào danh sách chưa nhớ');
+      }
+    } catch (err: any) {
+      // Revert optimistic update
+      set({ words: previousWords });
+      toast.error('Lỗi khi cập nhật trạng thái');
     }
   },
 }));

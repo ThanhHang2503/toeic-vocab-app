@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `vocabulary` (
     `example` TEXT NOT NULL,
     `pronunciation` VARCHAR(255),
     `image_path` VARCHAR(255),
+    `status` VARCHAR(20) DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_vocab_topic` FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE CASCADE

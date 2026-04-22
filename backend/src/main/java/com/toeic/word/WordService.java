@@ -85,4 +85,11 @@ public class WordService {
     public void deleteWord(Long id) {
         wordRepository.deleteById(id);
     }
+
+    public Word updateStatus(Long id, String status) {
+        Word word = wordRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Word not found"));
+        word.setStatus(status);
+        return wordRepository.save(word);
+    }
 }

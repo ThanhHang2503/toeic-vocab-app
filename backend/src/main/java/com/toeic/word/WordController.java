@@ -69,4 +69,16 @@ public class WordController {
         wordService.deleteWord(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Word> updateWordStatus(
+            @PathVariable Long id,
+            @RequestParam("status") String status) {
+        try {
+            Word updated = wordService.updateStatus(id, status);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

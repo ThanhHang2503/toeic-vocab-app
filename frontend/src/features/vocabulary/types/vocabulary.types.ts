@@ -1,4 +1,4 @@
-import type { BaseEntity, ID } from '@/shared/types/global.types';
+﻿import type { BaseEntity, ID } from '@/shared/types/global.types';
 
 /**
  * Vocabulary interface representing a word in the system.
@@ -14,7 +14,7 @@ export interface Vocabulary extends BaseEntity {
   imagePath?: string;
   topic?: Topic;
   topicId?: ID;
-  isLearned?: boolean;
+  status?: 'known' | 'unknown';
 }
 
 export type CreateVocabularyDto = Omit<Vocabulary, keyof BaseEntity>;
