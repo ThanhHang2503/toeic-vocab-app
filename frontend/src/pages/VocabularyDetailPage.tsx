@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/shared/components/Modal';
 import { Input } from '@/shared/components/Input';
+import { ImageUpload } from '@/shared/components/ImageUpload';
 import { useForm } from 'react-hook-form';
 import type { Vocabulary } from '@/features/vocabulary/types/vocabulary.types';
 
@@ -233,10 +234,11 @@ const VocabularyDetailPage = () => {
             error={errors.example?.message as string}
           />
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">Thay đổi ảnh minh họa</label>
-            <input type="file" className="file-input" {...register('image')} />
-          </div>
+          <ImageUpload 
+            label="Thay đổi ảnh minh họa"
+            defaultPreview={currentWord?.imagePath ? `http://localhost:8080/uploads/${currentWord.imagePath}` : null}
+            {...register('image')} 
+          />
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>

@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/Button';
 import { Plus, Trash2, Search, Image as ImageIcon, ArrowLeft, Edit2, Settings, AlertCircle } from 'lucide-react';
 import { Modal } from '@/shared/components/Modal';
 import { Input } from '@/shared/components/Input';
+import { ImageUpload } from '@/shared/components/ImageUpload';
 import { useForm } from 'react-hook-form';
 import type { Vocabulary } from '@/features/vocabulary/types/vocabulary.types';
 import type { CreateTopicDto } from '@/features/topics/types/topic.types';
@@ -261,10 +262,11 @@ const TopicDetailPage = () => {
             error={wordForm.formState.errors.example?.message as string}
           />
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">Ảnh minh họa (Không bắt buộc)</label>
-            <input type="file" className="file-input" {...wordForm.register('image')} />
-          </div>
+          <ImageUpload 
+            label="Ảnh minh họa (Không bắt buộc)"
+            defaultPreview={editingWord?.imagePath ? `http://localhost:8080/uploads/${editingWord.imagePath}` : null}
+            {...wordForm.register('image')} 
+          />
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => { setIsWordModalOpen(false); setEditingWord(null); wordForm.reset(); }}>

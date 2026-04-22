@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/Button';
 import { Plus, Trash2, Search, Filter, Image as ImageIcon, ArrowLeft, Edit2, Eye } from 'lucide-react';
 import { Modal } from '@/shared/components/Modal';
 import { Input } from '@/shared/components/Input';
+import { ImageUpload } from '@/shared/components/ImageUpload';
 import { useForm } from 'react-hook-form';
 import type { Vocabulary } from '@/features/vocabulary/types/vocabulary.types';
 
@@ -273,18 +274,11 @@ const VocabularyPage = () => {
             error={errors.example?.message as string}
           />
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">Ảnh minh họa</label>
-            <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <ImageIcon className="w-8 h-8 mb-3 text-gray-400" />
-                  <p className="mb-2 text-sm text-gray-500 font-semibold italic">Nhấp để tải ảnh lên</p>
-                </div>
-                <input type="file" className="hidden" {...register('image')} />
-              </label>
-            </div>
-          </div>
+          <ImageUpload 
+            label="Ảnh minh họa"
+            defaultPreview={editingWord?.imagePath ? `http://localhost:8080/uploads/${editingWord.imagePath}` : null}
+            {...register('image')} 
+          />
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCloseModal}>
